@@ -14,13 +14,20 @@ export function AppProvider({ children }) {
   const [budgets, setBudgets] = useState([]);
   const [categories, setCategories] = useState([]);
   const [dashboardData, setDashboardData] = useState(null);
+  const [cycleOverview, setCycleOverview] = useState(null);
+  const [profileBaseline, setProfileBaseline] = useState(null);
+  const [fixedCosts, setFixedCosts] = useState([]);
   const [insights, setInsights] = useState(null);
   const [profiles, setProfiles] = useState([]);
+  const [incomeTarget, setIncomeTarget] = useState(null);
 
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [loadingBudgets, setLoadingBudgets] = useState(false);
   const [loadingDashboard, setLoadingDashboard] = useState(false);
+  const [loadingCycleOverview, setLoadingCycleOverview] = useState(false);
+  const [loadingProfileBaseline, setLoadingProfileBaseline] = useState(false);
   const [loadingInsights, setLoadingInsights] = useState(false);
+  const [loadingIncomeTarget, setLoadingIncomeTarget] = useState(false);
 
   const loadCategories = useCallback(async () => {
     try {
@@ -70,6 +77,35 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  const loadCycleOverview = useCallback(async (cycle) => {
+    setLoadingCycleOverview(true);
+    try {
+      const data = await api.getCycleOverview(cycle);
+      setCycleOverview(data);
+    } catch (e) {
+      console.error('Failed to load cycle overview', e);
+      setCycleOverview(null);
+    } finally {
+      setLoadingCycleOverview(false);
+    }
+  }, []);
+
+  const loadProfileBaseline = useCallback(async () => {
+    setLoadingProfileBaseline(true);
+    try {
+      const data = await api.getProfileBaseline();
+      setProfileBaseline(data);
+      const fixed = await api.getFixedCosts();
+      setFixedCosts(fixed || []);
+    } catch (e) {
+      console.error('Failed to load profile baseline', e);
+      setProfileBaseline(null);
+      setFixedCosts([]);
+    } finally {
+      setLoadingProfileBaseline(false);
+    }
+  }, []);
+
   const loadInsights = useCallback(async () => {
     setLoadingInsights(true);
     try {
@@ -92,14 +128,30 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  const loadIncomeTarget = useCallback(async (month) => {
+    setLoadingIncomeTarget(true);
+    try {
+      const data = await api.getIncomeTarget(month);
+      setIncomeTarget(data?.total_income ?? null);
+    } catch (e) {
+      console.error('Failed to load income target', e);
+      setIncomeTarget(null);
+    } finally {
+      setLoadingIncomeTarget(false);
+    }
+  }, []);
+
   const refreshAll = useCallback(() => {
     loadCategories();
     loadTransactions(selectedMonth);
     loadBudgets(selectedMonth);
     loadDashboard();
+  loadCycleOverview(selectedMonth);
+  loadProfileBaseline();
     loadInsights();
     loadProfiles();
-  }, [loadCategories, loadTransactions, loadBudgets, loadDashboard, loadInsights, loadProfiles, selectedMonth]);
+    loadIncomeTarget(selectedMonth);
+  }, [loadCategories, loadTransactions, loadBudgets, loadDashboard, loadCycleOverview, loadProfileBaseline, loadInsights, loadProfiles, loadIncomeTarget, selectedMonth]);
 
   useEffect(() => {
     refreshAll();
@@ -109,7 +161,35 @@ export function AppProvider({ children }) {
   useEffect(() => {
     loadTransactions(selectedMonth);
     loadBudgets(selectedMonth);
-  }, [selectedMonth, loadTransactions, loadBudgets]);
+    loadCycleOverview(selectedMonth);
+    loadIncomeTarget(selectedMonth);
+  }, [selectedMonth, loadTransactions, loadBudgets, loadCycleOverview, loadIncomeTarget]);
+
+  const saveBaselineProfile = async (monthlySalary) => {
+    await api.saveProfileBaseline({ monthly_salary: Number(monthlySalary) });
+    await loadProfileBaseline();
+    await loadCycleOverview(selectedMonth);
+  };
+
+  const addFixedCost = async (payload) => {
+    await api.createFixedCost(payload);
+    await loadProfileBaseline();
+    await loadCycleOverview(selectedMonth);
+  };
+
+  const removeFixedCost = async (id) => {
+    await api.deleteFixedCost(id);
+    await loadProfileBaseline();
+    await loadCycleOverview(selectedMonth);
+  };
+
+  const saveIncomeTarget = async (totalIncome) => {
+    await api.upsertIncomeTarget({
+      month: selectedMonth,
+      total_income: totalIncome,
+    });
+    await loadIncomeTarget(selectedMonth);
+  };
 
   const addTransaction = async (data) => {
     await api.createTransaction(data);
@@ -193,23 +273,34 @@ export function AppProvider({ children }) {
         budgets,
         categories,
         dashboardData,
+  cycleOverview,
+  profileBaseline,
+  fixedCosts,
         insights,
         profiles,
+  incomeTarget,
         loadingTransactions,
         loadingBudgets,
         loadingDashboard,
+  loadingCycleOverview,
+  loadingProfileBaseline,
         loadingInsights,
+  loadingIncomeTarget,
         selectedMonth,
         setSelectedMonth,
         addTransaction,
         editTransaction,
         removeTransaction,
         saveBudget,
+  saveBaselineProfile,
+  addFixedCost,
+  removeFixedCost,
         removeBudget,
         saveProfile,
         removeProfile,
         applyProfile,
         saveCurrentAsProfile,
+        saveIncomeTarget,
         resetPlan,
         refreshAll,
       }}

@@ -10,6 +10,10 @@ const dashboardRouter     = require('./routes/dashboard');
 const insightsRouter      = require('./routes/insights');
 const profilesRouter      = require('./routes/profiles');
 const resetRouter         = require('./routes/reset');
+const incomeTargetRouter  = require('./routes/income-target');
+const profileBaselineRouter = require('./routes/profile-baseline');
+const fixedCostsRouter      = require('./routes/fixed-costs');
+const cycleOverviewRouter   = require('./routes/cycle-overview');
 const { seed }            = require('./db/seed');
 
 const app = express();
@@ -39,6 +43,10 @@ app.use('/api/dashboard',     dashboardRouter);
 app.use('/api/insights',      insightsRouter);
 app.use('/api/profiles',      profilesRouter);
 app.use('/api/reset',         resetRouter);
+app.use('/api/income-target', incomeTargetRouter);
+app.use('/api/profile-baseline', profileBaselineRouter);
+app.use('/api/fixed-costs',      fixedCostsRouter);
+app.use('/api/cycle-overview',   cycleOverviewRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

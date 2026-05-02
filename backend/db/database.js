@@ -19,6 +19,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     type TEXT NOT NULL CHECK(type IN ('income', 'expense')),
+    expense_kind TEXT CHECK(expense_kind IN ('fixed', 'variable')),
     amount REAL NOT NULL,
     category_id INTEGER,
     description TEXT,
@@ -51,7 +52,43 @@ db.exec(`
     FOREIGN KEY (category_id) REFERENCES categories(id),
     UNIQUE(profile_id, category_id)
   );
+
+  CREATE TABLE IF NOT EXISTS monthly_income_targets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    month TEXT NOT NULL UNIQUE,
+    total_income REAL NOT NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS financial_profile (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    monthly_salary REAL NOT NULL DEFAULT 0,
+    salary_day INTEGER NOT NULL DEFAULT 27 CHECK (salary_day = 27),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS fixed_costs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    amount REAL NOT NULL CHECK (amount >= 0),
+    created_at TEXT DEFAULT (datetime('now'))
+  );
 `);
+
+const transactionColumns = db
+  .prepare("PRAGMA table_info('transactions')")
+  .all()
+  .map((c) => c.name);
+
+if (!transactionColumns.includes('expense_kind')) {
+  db.exec("ALTER TABLE transactions ADD COLUMN expense_kind TEXT CHECK(expense_kind IN ('fixed', 'variable'))");
+}
+
+db.prepare(`
+  INSERT OR IGNORE INTO financial_profile (id, monthly_salary, salary_day)
+  VALUES (1, 0, 27)
+`).run();
 
 const DEFAULT_CATEGORIES = [
   { name: 'Housing',        icon: '🏠', color: '#6366f1' },

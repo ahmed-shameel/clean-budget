@@ -1,68 +1,25 @@
 import { useState } from 'react';
-import { LayoutDashboard, List, PieChart, Lightbulb, Wallet, RotateCcw } from 'lucide-react';
+import { LayoutDashboard, List, UserCircle2, Lightbulb, Wallet, RotateCcw } from 'lucide-react';
 import { AppProvider } from './context/AppContext';
 import { LangProvider, useT } from './i18n/index.jsx';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
-import Budgets from './pages/Budgets';
+import Profile from './pages/Profile';
 import Insights from './pages/Insights';
 import ResetModal from './components/ResetModal';
 
 const NAV_KEYS = [
   { id: 'dashboard',    labelKey: 'nav_dashboard',    icon: LayoutDashboard },
   { id: 'transactions', labelKey: 'nav_transactions', icon: List },
-  { id: 'budgets',      labelKey: 'nav_budgets',      icon: PieChart },
   { id: 'insights',     labelKey: 'nav_insights',     icon: Lightbulb },
 ];
 
 const PAGES = {
   dashboard: Dashboard,
   transactions: Transactions,
-  budgets: Budgets,
+  profile: Profile,
   insights: Insights,
 };
-
-function LangToggle() {
-  const { lang, setLang } = useT();
-  return (
-    <div className="flex items-center gap-1 px-3 py-2">
-      {['en', 'sv'].map((l) => (
-        <button
-          key={l}
-          onClick={() => setLang(l)}
-          className={`flex-1 py-1 text-xs font-semibold rounded-md transition-colors uppercase ${
-            lang === l
-              ? 'bg-primary-600 text-white'
-              : 'text-gray-500 hover:bg-gray-100'
-          }`}
-        >
-          {l}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function CurrencyToggle() {
-  const { currency, setCurrency } = useT();
-  return (
-    <div className="flex items-center gap-1 px-3 py-2">
-      {['EUR', 'SEK'].map((c) => (
-        <button
-          key={c}
-          onClick={() => setCurrency(c)}
-          className={`flex-1 py-1 text-xs font-semibold rounded-md transition-colors uppercase ${
-            currency === c
-              ? 'bg-primary-600 text-white'
-              : 'text-gray-500 hover:bg-gray-100'
-          }`}
-        >
-          {c}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 function Layout() {
   const [activePage, setActivePage] = useState('dashboard');
@@ -102,10 +59,18 @@ function Layout() {
         </nav>
 
         <div className="px-4 pb-2 border-t border-gray-100 pt-3 space-y-1">
-          {/* Language toggle */}
-          <LangToggle />
-          {/* Currency toggle */}
-          <CurrencyToggle />
+          {/* Profile quick access */}
+          <button
+            onClick={() => setActivePage('profile')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              activePage === 'profile'
+                ? 'bg-primary-600 text-white'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            }`}
+          >
+            <UserCircle2 size={18} />
+            {t('nav_profile')}
+          </button>
           {/* Reset */}
           <button
             onClick={() => setResetModalOpen(true)}
@@ -125,11 +90,6 @@ function Layout() {
               <Wallet size={16} className="text-white" />
             </div>
             <span className="text-sm font-bold text-gray-900">{t('brand')}</span>
-          </div>
-          {/* Language toggle on mobile */}
-          <div className="flex items-center gap-1">
-            <LangToggle />
-            <CurrencyToggle />
           </div>
         </header>
 

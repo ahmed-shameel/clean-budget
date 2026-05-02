@@ -4,7 +4,7 @@ const db = require('../db/database');
 
 const BASE_SELECT = `
   SELECT
-    t.id, t.type, t.amount, t.category_id,
+    t.id, t.type, t.expense_kind, t.amount, t.category_id,
     t.description, t.notes, t.date, t.created_at,
     c.name  AS category,
     c.icon  AS category_icon,
@@ -40,7 +40,7 @@ router.get('/', (req, res) => {
 // POST /api/transactions
 router.post('/', (req, res) => {
   try {
-    const { type, amount, category_id, description, notes, date } = req.body;
+    const { type, expense_kind, amount, category_id, description, notes, date } = req.body;
 
     if (!type || !amount || !date) {
       return res.status(400).json({ error: 'type, amount, and date are required' });
@@ -51,12 +51,23 @@ router.post('/', (req, res) => {
     if (typeof amount !== 'number' || amount <= 0) {
       return res.status(400).json({ error: 'amount must be a positive number' });
     }
+    if (type === 'expense' && expense_kind && !['fixed', 'variable'].includes(expense_kind)) {
+      return res.status(400).json({ error: 'expense_kind must be fixed or variable' });
+    }
 
     const stmt = db.prepare(`
-      INSERT INTO transactions (type, amount, category_id, description, notes, date)
-      VALUES (@type, @amount, @category_id, @description, @notes, @date)
+      INSERT INTO transactions (type, expense_kind, amount, category_id, description, notes, date)
+      VALUES (@type, @expense_kind, @amount, @category_id, @description, @notes, @date)
     `);
-    const info = stmt.run({ type, amount, category_id: category_id || null, description: description || null, notes: notes || null, date });
+    const info = stmt.run({
+      type,
+      expense_kind: type === 'expense' ? expense_kind || 'variable' : null,
+      amount,
+      category_id: category_id || null,
+      description: description || null,
+      notes: notes || null,
+      date,
+    });
     const created = db.prepare(BASE_SELECT + ' WHERE t.id = ?').get(info.lastInsertRowid);
     res.status(201).json(created);
   } catch (err) {
@@ -68,7 +79,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   try {
     const { id } = req.params;
-    const { type, amount, category_id, description, notes, date } = req.body;
+    const { type, expense_kind, amount, category_id, description, notes, date } = req.body;
 
     const existing = db.prepare('SELECT id FROM transactions WHERE id = ?').get(id);
     if (!existing) return res.status(404).json({ error: 'Transaction not found' });
@@ -79,10 +90,14 @@ router.put('/:id', (req, res) => {
     if (amount !== undefined && (typeof amount !== 'number' || amount <= 0)) {
       return res.status(400).json({ error: 'amount must be a positive number' });
     }
+    if (expense_kind !== undefined && expense_kind !== null && !['fixed', 'variable'].includes(expense_kind)) {
+      return res.status(400).json({ error: 'expense_kind must be fixed or variable' });
+    }
 
     const fields = [];
     const values = {};
     if (type        !== undefined) { fields.push('type = @type');               values.type        = type; }
+  if (expense_kind !== undefined) { fields.push('expense_kind = @expense_kind'); values.expense_kind = expense_kind; }
     if (amount      !== undefined) { fields.push('amount = @amount');           values.amount      = amount; }
     if (category_id !== undefined) { fields.push('category_id = @category_id'); values.category_id = category_id; }
     if (description !== undefined) { fields.push('description = @description'); values.description = description; }

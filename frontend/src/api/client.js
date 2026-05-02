@@ -45,6 +45,34 @@ export const getDashboardSummary = () => request('/dashboard/summary');
 
 export const getInsights = () => request('/insights');
 
+// --- Life optimizer core ---
+export const getCycleOverview = (cycle) => {
+  const query = cycle ? `?cycle=${cycle}` : '';
+  return request(`/cycle-overview${query}`);
+};
+
+export const getProfileBaseline = () => request('/profile-baseline');
+
+export const saveProfileBaseline = (data) =>
+  request('/profile-baseline', { method: 'POST', body: JSON.stringify(data) });
+
+export const getFixedCosts = () => request('/fixed-costs');
+
+export const createFixedCost = (data) =>
+  request('/fixed-costs', { method: 'POST', body: JSON.stringify(data) });
+
+export const deleteFixedCost = (id) =>
+  request(`/fixed-costs/${id}`, { method: 'DELETE' });
+
+// --- Monthly income target ---
+export const getIncomeTarget = (month) => {
+  const query = month ? `?month=${month}` : '';
+  return request(`/income-target${query}`);
+};
+
+export const upsertIncomeTarget = (data) =>
+  request('/income-target', { method: 'POST', body: JSON.stringify(data) });
+
 // --- Profiles ---
 export const getProfiles = () => request('/profiles');
 

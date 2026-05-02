@@ -14,17 +14,22 @@ const defaultForm = {
   notes: '',
 };
 
+const makeDefaultForm = () => ({
+  ...defaultForm,
+  type: 'expense',
+});
+
 export default function TransactionModal({ transaction, onClose }) {
   const { categories, addTransaction, editTransaction } = useApp();
   const { t, currencySymbol, translateCategory } = useT();
-  const [form, setForm] = useState(defaultForm);
+  const [form, setForm] = useState(makeDefaultForm());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (transaction) {
       setForm({
-        type: transaction.type || 'expense',
+        type: 'expense',
         amount: transaction.amount || '',
         category_id: transaction.category_id || '',
         description: transaction.description || '',
@@ -34,7 +39,7 @@ export default function TransactionModal({ transaction, onClose }) {
         notes: transaction.notes || '',
       });
     } else {
-      setForm(defaultForm);
+      setForm(makeDefaultForm());
     }
   }, [transaction]);
 
@@ -44,7 +49,7 @@ export default function TransactionModal({ transaction, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.amount || !form.category_id || !form.description || !form.date) {
+    if (!form.amount || !form.description || !form.date) {
       setError(t('required_fields_error'));
       return;
     }
@@ -53,8 +58,10 @@ export default function TransactionModal({ transaction, onClose }) {
     try {
       const payload = {
         ...form,
+        type: 'expense',
+        expense_kind: null,
         amount: parseFloat(form.amount),
-        category_id: parseInt(form.category_id, 10),
+        category_id: form.category_id ? parseInt(form.category_id, 10) : null,
       };
       if (transaction) {
         await editTransaction(transaction.id, payload);
@@ -85,26 +92,6 @@ export default function TransactionModal({ transaction, onClose }) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Type toggle */}
-          <div className="flex rounded-lg overflow-hidden border border-gray-200">
-            {['expense', 'income'].map((t_type) => (
-              <button
-                key={t_type}
-                type="button"
-                onClick={() => setForm((f) => ({ ...f, type: t_type, category_id: '' }))}
-                className={`flex-1 py-2 text-sm font-medium capitalize transition-colors ${
-                  form.type === t_type
-                    ? t_type === 'expense'
-                      ? 'bg-red-500 text-white'
-                      : 'bg-green-500 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                {t_type === 'expense' ? t('transaction_type_expense') : t('transaction_type_income')}
-              </button>
-            ))}
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t('transaction_amount')} <span className="text-red-500">*</span>
@@ -125,7 +112,7 @@ export default function TransactionModal({ transaction, onClose }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('transaction_category')} <span className="text-red-500">*</span>
+              {t('transaction_category_optional')}
             </label>
             <div className="relative">
               <select

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { format, addMonths, subMonths, parseISO } from 'date-fns';
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -14,7 +14,7 @@ export default function Transactions() {
     removeTransaction,
     categories,
   } = useApp();
-  const { t, formatMoney } = useT();
+  const { t, formatMoney, translateCategory } = useT();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
@@ -22,15 +22,40 @@ export default function Transactions() {
 
   const currentDate = parseISO(`${selectedMonth}-01`);
 
-  const prevMonth = () =>
+  const prevMonth = () => {
     setSelectedMonth(format(subMonths(currentDate, 1), 'yyyy-MM'));
-  const nextMonth = () =>
+  };
+  const nextMonth = () => {
     setSelectedMonth(format(addMonths(currentDate, 1), 'yyyy-MM'));
+  };
 
-  const openAdd = () => {
+  const sortedForRemaining = useMemo(() => {
+    return [...transactions].sort((a, b) => {
+      const dateCmp = String(a.date || '').localeCompare(String(b.date || ''));
+      if (dateCmp !== 0) return dateCmp;
+      return String(a.created_at || '').localeCompare(String(b.created_at || ''));
+    });
+  }, [transactions]);
+
+  const runningRemainingById = useMemo(() => {
+    let runningBalance = 0;
+    const map = new Map();
+
+    for (const tx of sortedForRemaining) {
+      if (tx.type === 'expense') {
+        runningBalance -= Number(tx.amount || 0);
+        map.set(tx.id, runningBalance);
+      }
+    }
+
+    return map;
+  }, [sortedForRemaining]);
+
+  const openAddExpense = () => {
     setEditingTx(null);
     setModalOpen(true);
   };
+
   const openEdit = (tx) => {
     setEditingTx(tx);
     setModalOpen(true);
@@ -56,11 +81,11 @@ export default function Transactions() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-900">{t('transactions_title')}</h1>
         <button
-          onClick={openAdd}
+          onClick={openAddExpense}
           className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
         >
           <Plus size={16} />
-          {t('transactions_add')}
+          {t('transactions_add_expense')}
         </button>
       </div>
 
@@ -93,7 +118,7 @@ export default function Transactions() {
           <div className="text-center py-16">
             <p className="text-gray-400 text-sm">{t('transactions_empty')}</p>
             <button
-              onClick={openAdd}
+              onClick={openAddExpense}
               className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700"
             >
               {t('transactions_add_first')}
@@ -118,22 +143,34 @@ export default function Transactions() {
                     {tx.description}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {tx.category_name || tx.category} ·{' '}
+                    {translateCategory(tx.category_name || tx.category)} ·{' '}
                     {tx.date
                       ? format(parseISO(tx.date.slice(0, 10)), 'MMM d, yyyy')
                       : ''}
                   </p>
+                  {tx.type === 'expense' && tx.expense_kind && (
+                    <span className="inline-flex mt-1 text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                      {tx.expense_kind === 'fixed'
+                        ? t('transaction_expense_fixed')
+                        : t('transaction_expense_variable')}
+                    </span>
+                  )}
                 </div>
 
                 {/* Amount */}
-                <span
-                  className={`text-sm font-semibold flex-shrink-0 ${
-                    tx.type === 'income' ? 'text-green-600' : 'text-red-600'
-                  }`}
-                >
-                  {tx.type === 'income' ? '+' : '-'}
-                  {formatMoney(tx.amount)}
-                </span>
+                <div className="text-right flex-shrink-0">
+                  <span
+                    className="text-sm font-semibold block text-red-600"
+                  >
+                    -
+                    {formatMoney(tx.amount)}
+                  </span>
+                  {runningRemainingById.has(tx.id) && (
+                    <span className="text-[11px] text-gray-500 block mt-0.5">
+                      {t('transactions_remaining_after')}: {formatMoney(runningRemainingById.get(tx.id))}
+                    </span>
+                  )}
+                </div>
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 flex-shrink-0">
@@ -160,6 +197,7 @@ export default function Transactions() {
       {modalOpen && (
         <TransactionModal
           transaction={editingTx}
+          initialType="expense"
           onClose={() => setModalOpen(false)}
         />
       )}
