@@ -1,0 +1,38 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+
+const categoriesRouter    = require('./routes/categories');
+const transactionsRouter  = require('./routes/transactions');
+const budgetsRouter       = require('./routes/budgets');
+const dashboardRouter     = require('./routes/dashboard');
+const insightsRouter      = require('./routes/insights');
+const { seed }            = require('./db/seed');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use(cors());
+app.use(express.json());
+
+// Seed on first startup
+seed();
+
+// Routes
+app.use('/api/categories',   categoriesRouter);
+app.use('/api/transactions',  transactionsRouter);
+app.use('/api/budgets',       budgetsRouter);
+app.use('/api/dashboard',     dashboardRouter);
+app.use('/api/insights',      insightsRouter);
+
+// Health check
+app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+
+// 404 handler
+app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
+
+app.listen(PORT, () => {
+  console.log(`🚀 Clean Budget API running on http://localhost:${PORT}`);
+});
+
+module.exports = app;
