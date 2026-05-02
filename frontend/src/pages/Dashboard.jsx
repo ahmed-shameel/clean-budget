@@ -13,16 +13,15 @@ import {
 } from 'recharts';
 import { TrendingUp, TrendingDown, PiggyBank, Percent } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useT } from '../i18n/index.jsx';
 import StatCard from '../components/StatCard';
 import ProgressBar from '../components/ProgressBar';
-
-const fmt = (v) =>
-  `€${Number(v || 0).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const FALLBACK_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 export default function Dashboard() {
   const { dashboardData, loadingDashboard } = useApp();
+  const { t, formatMoney } = useT();
 
   if (loadingDashboard) {
     return (
@@ -44,37 +43,37 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t('dashboard_title')}</h1>
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Total Income"
-          value={fmt(income)}
+          title={t('dashboard_total_income')}
+          value={formatMoney(income)}
           icon={TrendingUp}
           color="green"
-          subtitle="This month"
+          subtitle={t('dashboard_this_month')}
         />
         <StatCard
-          title="Total Expenses"
-          value={fmt(expenses)}
+          title={t('dashboard_total_expenses')}
+          value={formatMoney(expenses)}
           icon={TrendingDown}
           color="red"
-          subtitle="This month"
+          subtitle={t('dashboard_this_month')}
         />
         <StatCard
-          title="Net Savings"
-          value={fmt(net)}
+          title={t('dashboard_net_savings')}
+          value={formatMoney(net)}
           icon={PiggyBank}
           color={net >= 0 ? 'blue' : 'red'}
-          subtitle="Income − Expenses"
+          subtitle={t('dashboard_income_minus_expenses')}
         />
         <StatCard
-          title="Savings Rate"
+          title={t('dashboard_savings_rate')}
           value={`${savingsRate}%`}
           icon={Percent}
           color="purple"
-          subtitle="Of total income"
+          subtitle={t('dashboard_of_total_income')}
         />
       </div>
 
@@ -82,11 +81,11 @@ export default function Dashboard() {
         {/* Pie chart */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-base font-semibold text-gray-900 mb-4">
-            Expense Breakdown
+            {t('dashboard_expense_breakdown')}
           </h2>
           {pieData.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-10">
-              No expense data for this period.
+              {t('dashboard_no_expense_data')}
             </p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
@@ -108,7 +107,7 @@ export default function Dashboard() {
                     />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v) => fmt(v)} />
+                <Tooltip formatter={(v) => formatMoney(v)} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -118,19 +117,19 @@ export default function Dashboard() {
         {/* Line chart */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-base font-semibold text-gray-900 mb-4">
-            Income vs Expenses Trend
+            {t('dashboard_income_vs_expenses')}
           </h2>
           {trendData.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-10">
-              No trend data available.
+              {t('dashboard_no_trend_data')}
             </p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <LineChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `€${v}`} />
-                <Tooltip formatter={(v) => fmt(v)} />
+                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => formatMoney(v)} />
+                <Tooltip formatter={(v) => formatMoney(v)} />
                 <Legend />
                 <Line
                   type="monotone"
@@ -138,7 +137,7 @@ export default function Dashboard() {
                   stroke="#10b981"
                   strokeWidth={2}
                   dot={false}
-                  name="Income"
+                  name={t('dashboard_income_label')}
                 />
                 <Line
                   type="monotone"
@@ -146,7 +145,7 @@ export default function Dashboard() {
                   stroke="#ef4444"
                   strokeWidth={2}
                   dot={false}
-                  name="Expenses"
+                  name={t('dashboard_expenses_label')}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -158,7 +157,7 @@ export default function Dashboard() {
       {budgetStatus.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-base font-semibold text-gray-900 mb-4">
-            Budget Status
+            {t('dashboard_budget_status')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {budgetStatus.map((b) => {
@@ -181,8 +180,8 @@ export default function Dashboard() {
                   </div>
                   <ProgressBar percent={pct} />
                   <div className="flex justify-between mt-2 text-xs text-gray-500">
-                    <span>{fmt(b.spent)} spent</span>
-                    <span>{fmt(b.budget)} limit</span>
+                    <span>{formatMoney(b.spent)} {t('budgets_spent')}</span>
+                    <span>{formatMoney(b.budget)} {t('budget_monthly_limit')}</span>
                   </div>
                 </div>
               );

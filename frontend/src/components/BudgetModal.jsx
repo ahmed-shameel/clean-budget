@@ -1,9 +1,12 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronDown } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useT } from '../i18n/index.jsx';
 
 export default function BudgetModal({ budget, onClose }) {
   const { categories, budgets, saveBudget } = useApp();
+  const { t, currencySymbol, translateCategory } = useT();
   const [form, setForm] = useState({ category_id: '', monthly_limit: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -32,7 +35,7 @@ export default function BudgetModal({ budget, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.category_id || !form.monthly_limit) {
-      setError('Please fill in all required fields.');
+      setError(t('required_fields_error'));
       return;
     }
     setSaving(true);
@@ -45,7 +48,7 @@ export default function BudgetModal({ budget, onClose }) {
       });
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to save budget.');
+      setError(err.message || t('budgets_failed_save'));
     } finally {
       setSaving(false);
     }
@@ -56,7 +59,7 @@ export default function BudgetModal({ budget, onClose }) {
       <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">
-            {budget ? 'Edit Budget' : 'Add Budget'}
+            {budget ? t('budget_edit_title') : t('budget_add_title')}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={20} />
@@ -66,32 +69,38 @@ export default function BudgetModal({ budget, onClose }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category <span className="text-red-500">*</span>
+              {t('budget_category')} <span className="text-red-500">*</span>
             </label>
-            <select
-              value={form.category_id}
-              onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
-              disabled={!!budget}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50"
-            >
-              <option value="">Select category</option>
-              {(budget
-                ? categories.filter((c) => c.id === budget.category_id)
-                : availableCategories
-              ).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={form.category_id}
+                onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
+                disabled={!!budget}
+                className="form-select disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+              >
+                <option value="">{t('budget_select_category')}</option>
+                {(budget
+                  ? categories.filter((c) => c.id === budget.category_id)
+                  : availableCategories
+                ).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {translateCategory(c.name)}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={16}
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Monthly Limit <span className="text-red-500">*</span>
+              {t('budget_monthly_limit')} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{currencySymbol}</span>
               <input
                 type="number"
                 step="0.01"
@@ -100,7 +109,7 @@ export default function BudgetModal({ budget, onClose }) {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, monthly_limit: e.target.value }))
                 }
-                className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="form-control-with-prefix"
                 placeholder="0.00"
               />
             </div>
@@ -118,14 +127,14 @@ export default function BudgetModal({ budget, onClose }) {
               onClick={onClose}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-60"
             >
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? t('saving') : t('save')}
             </button>
           </div>
         </form>

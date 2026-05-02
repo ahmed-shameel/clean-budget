@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { format } from 'date-fns';
 import * as api from '../api/client';
@@ -134,7 +136,10 @@ export function AppProvider({ children }) {
   };
 
   const saveBudget = async (data) => {
-    await api.upsertBudget(data);
+    await api.upsertBudget({
+      ...data,
+      month: data?.month || selectedMonth,
+    });
     await loadBudgets(selectedMonth);
     await loadDashboard();
     await loadInsights();

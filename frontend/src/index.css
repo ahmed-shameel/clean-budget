@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+	.form-control {
+		@apply w-full bg-white border border-gray-300 rounded-lg text-sm text-gray-800 shadow-sm transition-colors hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
+	}
+
+	.form-control-with-prefix {
+		@apply form-control pl-8 pr-3 py-2;
+	}
+
+	.form-select {
+		@apply form-control appearance-none px-3 pr-10 py-2;
+	}
+
+	.form-textarea {
+		@apply form-control px-3 py-2 resize-none;
+	}
+}

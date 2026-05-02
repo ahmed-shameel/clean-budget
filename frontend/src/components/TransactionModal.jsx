@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { useApp } from '../context/AppContext';
+import { useT } from '../i18n/index.jsx';
 
 const defaultForm = {
   type: 'expense',
@@ -14,6 +16,7 @@ const defaultForm = {
 
 export default function TransactionModal({ transaction, onClose }) {
   const { categories, addTransaction, editTransaction } = useApp();
+  const { t, currencySymbol, translateCategory } = useT();
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -42,7 +45,7 @@ export default function TransactionModal({ transaction, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.amount || !form.category_id || !form.description || !form.date) {
-      setError('Please fill in all required fields.');
+      setError(t('required_fields_error'));
       return;
     }
     setSaving(true);
@@ -60,7 +63,7 @@ export default function TransactionModal({ transaction, onClose }) {
       }
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to save transaction.');
+      setError(err.message || t('transactions_failed_save'));
     } finally {
       setSaving(false);
     }
@@ -71,7 +74,7 @@ export default function TransactionModal({ transaction, onClose }) {
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">
-            {transaction ? 'Edit Transaction' : 'Add Transaction'}
+            {transaction ? t('transaction_edit_title') : t('transaction_add_title')}
           </h2>
           <button
             onClick={onClose}
@@ -84,37 +87,37 @@ export default function TransactionModal({ transaction, onClose }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type toggle */}
           <div className="flex rounded-lg overflow-hidden border border-gray-200">
-            {['expense', 'income'].map((t) => (
+            {['expense', 'income'].map((t_type) => (
               <button
-                key={t}
+                key={t_type}
                 type="button"
-                onClick={() => setForm((f) => ({ ...f, type: t, category_id: '' }))}
+                onClick={() => setForm((f) => ({ ...f, type: t_type, category_id: '' }))}
                 className={`flex-1 py-2 text-sm font-medium capitalize transition-colors ${
-                  form.type === t
-                    ? t === 'expense'
+                  form.type === t_type
+                    ? t_type === 'expense'
                       ? 'bg-red-500 text-white'
                       : 'bg-green-500 text-white'
                     : 'bg-white text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                {t}
+                {t_type === 'expense' ? t('transaction_type_expense') : t('transaction_type_income')}
               </button>
             ))}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Amount <span className="text-red-500">*</span>
+              {t('transaction_amount')} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{currencySymbol}</span>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={form.amount}
                 onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-                className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="form-control-with-prefix"
                 placeholder="0.00"
               />
             </div>
@@ -122,57 +125,63 @@ export default function TransactionModal({ transaction, onClose }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category <span className="text-red-500">*</span>
+              {t('transaction_category')} <span className="text-red-500">*</span>
             </label>
-            <select
-              value={form.category_id}
-              onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="">Select category</option>
-              {filteredCategories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={form.category_id}
+                onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
+                className="form-select"
+              >
+                <option value="">{t('transaction_select_category')}</option>
+                {filteredCategories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {translateCategory(c.name)}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={16}
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description <span className="text-red-500">*</span>
+              {t('transaction_description')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="e.g. Grocery shopping"
+              className="form-control px-3 py-2"
+              placeholder={t('transaction_description_placeholder')}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date <span className="text-red-500">*</span>
+              {t('transaction_date')} <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               value={form.date}
               onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="form-control px-3 py-2"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notes
+              {t('transaction_notes')}
             </label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-              placeholder="Optional notes..."
+              className="form-textarea"
+              placeholder={t('transaction_notes_placeholder')}
             />
           </div>
 
@@ -188,14 +197,14 @@ export default function TransactionModal({ transaction, onClose }) {
               onClick={onClose}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-60"
             >
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? t('saving') : t('save')}
             </button>
           </div>
         </form>

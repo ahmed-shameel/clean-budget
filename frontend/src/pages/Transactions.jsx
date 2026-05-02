@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { format, addMonths, subMonths, parseISO } from 'date-fns';
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useT } from '../i18n/index.jsx';
 import TransactionModal from '../components/TransactionModal';
-
-const fmt = (v) =>
-  `€${Number(v || 0).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function Transactions() {
   const {
@@ -16,6 +14,7 @@ export default function Transactions() {
     removeTransaction,
     categories,
   } = useApp();
+  const { t, formatMoney } = useT();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
@@ -37,7 +36,7 @@ export default function Transactions() {
     setModalOpen(true);
   };
   const handleDelete = async (id) => {
-    if (!confirm('Delete this transaction?')) return;
+    if (!confirm(t('transactions_delete_confirm'))) return;
     setDeletingId(id);
     try {
       await removeTransaction(id);
@@ -55,13 +54,13 @@ export default function Transactions() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('transactions_title')}</h1>
         <button
           onClick={openAdd}
           className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
         >
           <Plus size={16} />
-          Add Transaction
+          {t('transactions_add')}
         </button>
       </div>
 
@@ -92,12 +91,12 @@ export default function Transactions() {
           </div>
         ) : transactions.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-400 text-sm">No transactions for this month.</p>
+            <p className="text-gray-400 text-sm">{t('transactions_empty')}</p>
             <button
               onClick={openAdd}
               className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700"
             >
-              Add your first transaction
+              {t('transactions_add_first')}
             </button>
           </div>
         ) : (
@@ -133,7 +132,7 @@ export default function Transactions() {
                   }`}
                 >
                   {tx.type === 'income' ? '+' : '-'}
-                  {fmt(tx.amount)}
+                  {formatMoney(tx.amount)}
                 </span>
 
                 {/* Actions */}

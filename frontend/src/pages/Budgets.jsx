@@ -2,17 +2,16 @@ import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { Plus, Pencil, Trash2, BookMarked, CheckCheck, Save } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useT } from '../i18n/index.jsx';
 import BudgetModal from '../components/BudgetModal';
 import ProfileModal from '../components/ProfileModal';
 import ProgressBar from '../components/ProgressBar';
-
-const fmt = (v) =>
-  `€${Number(v || 0).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 // ── Save-as-profile inline prompt ─────────────────────────────────────────
 function SaveAsProfileBar({ onSave, onCancel }) {
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
+  const { t } = useT();
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -28,7 +27,7 @@ function SaveAsProfileBar({ onSave, onCancel }) {
         value={name}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') onCancel(); }}
-        placeholder="Profile name…"
+        placeholder={t('profiles_name_placeholder')}
         className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
       />
       <button
@@ -36,13 +35,13 @@ function SaveAsProfileBar({ onSave, onCancel }) {
         disabled={saving || !name.trim()}
         className="px-3 py-1.5 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
       >
-        {saving ? 'Saving…' : 'Save'}
+        {saving ? t('saving') : t('save')}
       </button>
       <button
         onClick={onCancel}
         className="px-3 py-1.5 border border-gray-300 text-gray-600 rounded-lg text-sm hover:bg-gray-50 transition-colors"
       >
-        Cancel
+        {t('cancel')}
       </button>
     </div>
   );
@@ -51,12 +50,15 @@ function SaveAsProfileBar({ onSave, onCancel }) {
 // ── Profile card ───────────────────────────────────────────────────────────
 function ProfileCard({ profile, onEdit, onDelete, onApply, applying }) {
   const [deleting, setDeleting] = useState(false);
+  const { t } = useT();
 
   const handleDelete = async () => {
-    if (!confirm(`Delete profile "${profile.name}"?`)) return;
+    if (!confirm(t('profiles_delete_confirm', { name: profile.name }))) return;
     setDeleting(true);
     try { await onDelete(profile.id); } finally { setDeleting(false); }
   };
+
+  const count = profile.budget_count;
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex items-center gap-4">
@@ -66,18 +68,18 @@ function ProfileCard({ profile, onEdit, onDelete, onApply, applying }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-gray-900 truncate">{profile.name}</p>
         <p className="text-xs text-gray-400">
-          {profile.budget_count} {profile.budget_count === 1 ? 'category' : 'categories'}
+          {count} {count === 1 ? t('profiles_budget_count_one') : t('profiles_budget_count_many')}
         </p>
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
         <button
           onClick={() => onApply(profile.id)}
           disabled={applying === profile.id}
-          title="Apply to current month"
+          title={t('apply')}
           className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors disabled:opacity-50"
         >
           <CheckCheck size={13} />
-          {applying === profile.id ? 'Applying…' : 'Apply'}
+          {applying === profile.id ? t('applying') : t('apply')}
         </button>
         <button
           onClick={() => onEdit(profile)}
@@ -103,6 +105,7 @@ export default function Budgets() {
     budgets, loadingBudgets, removeBudget, selectedMonth,
     profiles, removeProfile, applyProfile, saveCurrentAsProfile,
   } = useApp();
+  const { t, formatMoney } = useT();
 
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
@@ -121,7 +124,7 @@ export default function Budgets() {
   const openEditBudget = (b) => { setEditingBudget(b); setBudgetModalOpen(true); };
 
   const handleDeleteBudget = async (id) => {
-    if (!confirm('Delete this budget?')) return;
+    if (!confirm(t('budgets_delete_confirm'))) return;
     setDeletingId(id);
     try { await removeBudget(id); } finally { setDeletingId(null); }
   };
@@ -130,7 +133,7 @@ export default function Budgets() {
   const openEditProfile = (p) => { setEditingProfile(p); setProfileModalOpen(true); };
 
   const handleApplyProfile = async (id) => {
-    if (!confirm(`Apply this profile to ${displayMonth}? Existing budgets for matching categories will be overwritten.`)) return;
+    if (!confirm(t('profiles_apply_confirm', { month: displayMonth }))) return;
     setApplyingProfile(id);
     try { await applyProfile(id); } finally { setApplyingProfile(null); }
   };
@@ -145,7 +148,7 @@ export default function Budgets() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Budget Manager</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('budgets_title')}</h1>
           {displayMonth && (
             <p className="text-sm text-gray-500 mt-1">{displayMonth}</p>
           )}
@@ -155,7 +158,7 @@ export default function Budgets() {
           className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
         >
           <Plus size={16} />
-          Add Budget
+          {t('budgets_add')}
         </button>
       </div>
 
@@ -164,7 +167,7 @@ export default function Budgets() {
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <BookMarked size={16} className="text-primary-600" />
-            <h2 className="text-sm font-semibold text-gray-900">Budget Profiles</h2>
+            <h2 className="text-sm font-semibold text-gray-900">{t('profiles_title')}</h2>
           </div>
           <div className="flex items-center gap-2">
             {budgets.length > 0 && (
@@ -173,7 +176,7 @@ export default function Budgets() {
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <Save size={13} />
-                Save current as profile
+                {t('profiles_save_current')}
               </button>
             )}
             <button
@@ -181,7 +184,7 @@ export default function Budgets() {
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
             >
               <Plus size={13} />
-              New Profile
+              {t('profiles_new')}
             </button>
           </div>
         </div>
@@ -195,7 +198,7 @@ export default function Budgets() {
 
         {profiles.length === 0 ? (
           <p className="text-sm text-gray-400 text-center py-6">
-            No profiles yet. Create one to quickly re-apply a set of budgets to any month.
+            {t('profiles_empty')}
           </p>
         ) : (
           <div className="space-y-2 mt-3">
@@ -220,12 +223,12 @@ export default function Budgets() {
         </div>
       ) : budgets.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm text-center py-16">
-          <p className="text-gray-400 text-sm">No budgets set for {displayMonth}.</p>
+          <p className="text-gray-400 text-sm">{t('budgets_empty', { month: displayMonth })}</p>
           <button
             onClick={openAddBudget}
             className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700"
           >
-            Add your first budget
+            {t('budgets_add_first')}
           </button>
         </div>
       ) : (
@@ -250,7 +253,7 @@ export default function Budgets() {
                       {b.category_name || b.category}
                     </h3>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      Monthly limit: {fmt(limit)}
+                      {t('budgets_monthly_limit', { amount: formatMoney(limit) })}
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
@@ -274,12 +277,13 @@ export default function Budgets() {
 
                 <div className="flex items-center justify-between mt-3">
                   <div className="text-xs text-gray-500">
-                    <span className="font-medium text-gray-700">{fmt(spent)}</span> spent
+                    <span className="font-medium text-gray-700">{formatMoney(spent)}</span>{' '}
+                    {t('budgets_spent')}
                   </div>
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColor}`}>
                     {pct >= 100
-                      ? `${fmt(Math.abs(remaining))} over`
-                      : `${fmt(remaining)} left`}
+                      ? t('budgets_over', { amount: formatMoney(Math.abs(remaining)) })
+                      : t('budgets_left', { amount: formatMoney(remaining) })}
                   </span>
                 </div>
               </div>

@@ -6,9 +6,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-
-const fmt = (v) =>
-  `€${Number(v || 0).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+import { useT } from '../i18n/index.jsx';
 
 const CARD_STYLES = {
   warning: {
@@ -32,6 +30,7 @@ const CARD_STYLES = {
 };
 
 function InsightCard({ insight }) {
+  const { t, formatMoney } = useT();
   const type = insight.type || 'tip';
   const style = CARD_STYLES[type] || CARD_STYLES.tip;
   const Icon = style.icon;
@@ -48,10 +47,8 @@ function InsightCard({ insight }) {
             {insight.description}
           </p>
           {insight.savings != null && (
-            <span
-              className={`inline-block mt-2 text-xs font-medium px-2 py-0.5 rounded-full ${style.badge}`}
-            >
-              Save {fmt(insight.savings)}/month
+            <span className={`inline-block mt-2 text-xs font-medium px-2 py-0.5 rounded-full ${style.badge}`}>
+              {t('insights_save_per_month', { amount: formatMoney(insight.savings) })}
             </span>
           )}
         </div>
@@ -62,6 +59,7 @@ function InsightCard({ insight }) {
 
 export default function Insights() {
   const { insights, loadingInsights } = useApp();
+  const { t, formatMoney } = useT();
 
   if (loadingInsights) {
     return (
@@ -77,22 +75,20 @@ export default function Insights() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Insights</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t('insights_title')}</h1>
 
       {/* Insight cards */}
       {cards.length === 0 && !optimization ? (
         <div className="bg-white rounded-xl shadow-sm text-center py-16">
           <Sparkles className="mx-auto text-gray-300 mb-3" size={32} />
-          <p className="text-gray-400 text-sm">
-            Add more transactions to unlock insights.
-          </p>
+          <p className="text-gray-400 text-sm">{t('insights_empty')}</p>
         </div>
       ) : (
         <>
           {cards.length > 0 && (
             <div>
               <h2 className="text-base font-semibold text-gray-700 mb-3">
-                Recommendations
+                {t('insights_recommendations')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {cards.map((insight, i) => (
@@ -108,27 +104,27 @@ export default function Insights() {
               <div className="flex items-center gap-2 mb-4">
                 <TrendingDown size={20} className="text-primary-600" />
                 <h2 className="text-base font-semibold text-gray-900">
-                  Savings Optimization
+                  {t('insights_optimization_title')}
                 </h2>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <div className="bg-gray-50 rounded-lg p-4 text-center">
-                  <p className="text-xs text-gray-500 mb-1">Current Monthly Savings</p>
+                  <p className="text-xs text-gray-500 mb-1">{t('insights_current_savings')}</p>
                   <p className="text-lg font-bold text-gray-900">
-                    {fmt(optimization.currentMonthlySavings)}
+                    {formatMoney(optimization.currentMonthlySavings)}
                   </p>
                 </div>
                 <div className="bg-blue-50 rounded-lg p-4 text-center">
-                  <p className="text-xs text-gray-500 mb-1">Potential Monthly Savings</p>
+                  <p className="text-xs text-gray-500 mb-1">{t('insights_potential_savings')}</p>
                   <p className="text-lg font-bold text-primary-600">
-                    {fmt(optimization.potentialMonthlySavings)}
+                    {formatMoney(optimization.potentialMonthlySavings)}
                   </p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4 text-center">
-                  <p className="text-xs text-gray-500 mb-1">Yearly Projection</p>
+                  <p className="text-xs text-gray-500 mb-1">{t('insights_yearly_projection')}</p>
                   <p className="text-lg font-bold text-green-600">
-                    {fmt(optimization.yearlyProjection)}
+                    {formatMoney(optimization.yearlyProjection)}
                   </p>
                 </div>
               </div>
@@ -136,7 +132,7 @@ export default function Insights() {
               {scenarios.length > 0 && (
                 <>
                   <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                    What-If Scenarios
+                    {t('insights_what_if')}
                   </h3>
                   <div className="space-y-3">
                     {scenarios.map((s, i) => (
@@ -146,16 +142,14 @@ export default function Insights() {
                       >
                         <div>
                           <p className="text-sm font-medium text-gray-800">
-                            Reduce{' '}
-                            <span className="text-primary-600">{s.category}</span> by{' '}
-                            {s.reduction}%
+                            {t('insights_reduce_by', { category: s.category, reduction: s.reduction })}
                           </p>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            {fmt(s.monthlySavings)}/month · {fmt(s.yearlySavings)}/year
+                            {t('insights_scenario_detail', { monthly: formatMoney(s.monthlySavings), yearly: formatMoney(s.yearlySavings) })}
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full">
-                          +{fmt(s.monthlySavings)}/mo
+                          {t('insights_scenario_badge', { amount: formatMoney(s.monthlySavings) })}
                         </span>
                       </div>
                     ))}
