@@ -73,7 +73,7 @@ export default function Insights() {
 
   const cards = insights?.insights || [];
   const optimization = insights?.savingsOptimization || null;
-  const scenarios = insights?.whatIfScenarios || [];
+  const scenarios = optimization?.scenarios || [];
 
   return (
     <div className="space-y-6">
@@ -116,19 +116,19 @@ export default function Insights() {
                 <div className="bg-gray-50 rounded-lg p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Current Monthly Savings</p>
                   <p className="text-lg font-bold text-gray-900">
-                    {fmt(optimization.currentSavings)}
+                    {fmt(optimization.currentMonthlySavings)}
                   </p>
                 </div>
                 <div className="bg-blue-50 rounded-lg p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Potential Monthly Savings</p>
                   <p className="text-lg font-bold text-primary-600">
-                    {fmt(optimization.potentialSavings)}
+                    {fmt(optimization.potentialMonthlySavings)}
                   </p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">Yearly Projection</p>
                   <p className="text-lg font-bold text-green-600">
-                    {fmt((optimization.potentialSavings || 0) * 12)}
+                    {fmt(optimization.yearlyProjection)}
                   </p>
                 </div>
               </div>
@@ -148,14 +148,14 @@ export default function Insights() {
                           <p className="text-sm font-medium text-gray-800">
                             Reduce{' '}
                             <span className="text-primary-600">{s.category}</span> by{' '}
-                            {s.reductionPercent}%
+                            {s.reduction}%
                           </p>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            {fmt(s.monthlySaving)}/month · {fmt(s.yearlySaving)}/year
+                            {fmt(s.monthlySavings)}/month · {fmt(s.yearlySavings)}/year
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full">
-                          +{fmt(s.monthlySaving)}/mo
+                          +{fmt(s.monthlySavings)}/mo
                         </span>
                       </div>
                     ))}
