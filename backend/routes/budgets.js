@@ -5,13 +5,20 @@ const db = require('../db/database');
 // GET /api/budgets
 router.get('/', (req, res) => {
   try {
+    const month = req.query.month || new Date().toISOString().slice(0, 7);
     const budgets = db.prepare(`
       SELECT b.id, b.category_id, b.monthly_limit, b.month,
-             c.name AS category, c.icon, c.color
+             c.name AS category, c.icon, c.color,
+             COALESCE(SUM(t.amount), 0) AS spent
       FROM budgets b
       JOIN categories c ON c.id = b.category_id
+      LEFT JOIN transactions t
+        ON t.category_id = b.category_id
+        AND t.type = 'expense'
+        AND strftime('%Y-%m', t.date) = ?
+      GROUP BY b.id
       ORDER BY c.name
-    `).all();
+    `).all(month);
     res.json(budgets);
   } catch (err) {
     res.status(500).json({ error: err.message });

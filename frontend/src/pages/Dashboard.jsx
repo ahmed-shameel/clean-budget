@@ -22,7 +22,7 @@ const fmt = (v) =>
 const FALLBACK_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 export default function Dashboard() {
-  const { dashboardData, loadingDashboard, budgets } = useApp();
+  const { dashboardData, loadingDashboard } = useApp();
 
   if (loadingDashboard) {
     return (
@@ -32,9 +32,10 @@ export default function Dashboard() {
     );
   }
 
-  const summary = dashboardData?.summary || {};
-  const pieData = dashboardData?.expensesByCategory || [];
+  const summary = dashboardData?.currentMonth || {};
+  const pieData = dashboardData?.categoryBreakdown || [];
   const trendData = dashboardData?.monthlyTrend || [];
+  const budgetStatus = dashboardData?.budgetStatus || [];
 
   const income = summary.totalIncome || 0;
   const expenses = summary.totalExpenses || 0;
@@ -154,14 +155,14 @@ export default function Dashboard() {
       </div>
 
       {/* Budget status */}
-      {budgets.length > 0 && (
+      {budgetStatus.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-base font-semibold text-gray-900 mb-4">
             Budget Status
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {budgets.map((b) => {
-              const pct = b.monthly_limit > 0 ? (b.spent / b.monthly_limit) * 100 : 0;
+            {budgetStatus.map((b) => {
+              const pct = b.percentage || 0;
               const statusColor =
                 pct >= 100
                   ? 'text-red-600'
@@ -169,19 +170,19 @@ export default function Dashboard() {
                   ? 'text-yellow-600'
                   : 'text-green-600';
               return (
-                <div key={b.id} className="border border-gray-100 rounded-lg p-4">
+                <div key={b.category} className="border border-gray-100 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700">
-                      {b.category_name || b.category}
+                      {b.icon} {b.category}
                     </span>
                     <span className={`text-sm font-semibold ${statusColor}`}>
-                      {pct.toFixed(0)}%
+                      {pct}%
                     </span>
                   </div>
                   <ProgressBar percent={pct} />
                   <div className="flex justify-between mt-2 text-xs text-gray-500">
-                    <span>{fmt(b.spent || 0)} spent</span>
-                    <span>{fmt(b.monthly_limit)} limit</span>
+                    <span>{fmt(b.spent)} spent</span>
+                    <span>{fmt(b.budget)} limit</span>
                   </div>
                 </div>
               );

@@ -41,10 +41,10 @@ export function AppProvider({ children }) {
     }
   }, []);
 
-  const loadBudgets = useCallback(async () => {
+  const loadBudgets = useCallback(async (month) => {
     setLoadingBudgets(true);
     try {
-      const data = await api.getBudgets();
+      const data = await api.getBudgets(month);
       setBudgets(data);
     } catch (e) {
       console.error('Failed to load budgets', e);
@@ -83,7 +83,7 @@ export function AppProvider({ children }) {
   const refreshAll = useCallback(() => {
     loadCategories();
     loadTransactions(selectedMonth);
-    loadBudgets();
+    loadBudgets(selectedMonth);
     loadDashboard();
     loadInsights();
   }, [loadCategories, loadTransactions, loadBudgets, loadDashboard, loadInsights, selectedMonth]);
@@ -95,11 +95,13 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     loadTransactions(selectedMonth);
-  }, [selectedMonth, loadTransactions]);
+    loadBudgets(selectedMonth);
+  }, [selectedMonth, loadTransactions, loadBudgets]);
 
   const addTransaction = async (data) => {
     await api.createTransaction(data);
     await loadTransactions(selectedMonth);
+    await loadBudgets(selectedMonth);
     await loadDashboard();
     await loadInsights();
   };
@@ -107,6 +109,7 @@ export function AppProvider({ children }) {
   const editTransaction = async (id, data) => {
     await api.updateTransaction(id, data);
     await loadTransactions(selectedMonth);
+    await loadBudgets(selectedMonth);
     await loadDashboard();
     await loadInsights();
   };
@@ -114,20 +117,21 @@ export function AppProvider({ children }) {
   const removeTransaction = async (id) => {
     await api.deleteTransaction(id);
     await loadTransactions(selectedMonth);
+    await loadBudgets(selectedMonth);
     await loadDashboard();
     await loadInsights();
   };
 
   const saveBudget = async (data) => {
     await api.upsertBudget(data);
-    await loadBudgets();
+    await loadBudgets(selectedMonth);
     await loadDashboard();
     await loadInsights();
   };
 
   const removeBudget = async (id) => {
     await api.deleteBudget(id);
-    await loadBudgets();
+    await loadBudgets(selectedMonth);
     await loadDashboard();
     await loadInsights();
   };

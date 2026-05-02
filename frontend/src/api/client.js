@@ -30,7 +30,10 @@ export const updateTransaction = (id, data) =>
 export const deleteTransaction = (id) =>
   request(`/transactions/${id}`, { method: 'DELETE' });
 
-export const getBudgets = () => request('/budgets');
+export const getBudgets = (month) => {
+  const query = month ? `?month=${month}` : '';
+  return request(`/budgets${query}`);
+};
 
 export const upsertBudget = (data) =>
   request('/budgets', { method: 'POST', body: JSON.stringify(data) });
