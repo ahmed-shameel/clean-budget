@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { LayoutDashboard, List, PieChart, Lightbulb, Wallet } from 'lucide-react';
+import { LayoutDashboard, List, PieChart, Lightbulb, Wallet, RotateCcw } from 'lucide-react';
 import { AppProvider } from './context/AppContext';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Budgets from './pages/Budgets';
 import Insights from './pages/Insights';
+import ResetModal from './components/ResetModal';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -22,6 +23,7 @@ const PAGES = {
 
 function Layout() {
   const [activePage, setActivePage] = useState('dashboard');
+  const [resetModalOpen, setResetModalOpen] = useState(false);
   const Page = PAGES[activePage];
 
   return (
@@ -52,6 +54,15 @@ function Layout() {
             );
           })}
         </nav>
+        <div className="px-4 py-4 border-t border-gray-100">
+          <button
+            onClick={() => setResetModalOpen(true)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+          >
+            <RotateCcw size={18} />
+            Start New Plan
+          </button>
+        </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -84,6 +95,10 @@ function Layout() {
           })}
         </nav>
       </div>
+
+      {resetModalOpen && (
+        <ResetModal onClose={() => setResetModalOpen(false)} />
+      )}
     </div>
   );
 }

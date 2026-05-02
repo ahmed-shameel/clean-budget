@@ -8,6 +8,8 @@ const transactionsRouter  = require('./routes/transactions');
 const budgetsRouter       = require('./routes/budgets');
 const dashboardRouter     = require('./routes/dashboard');
 const insightsRouter      = require('./routes/insights');
+const profilesRouter      = require('./routes/profiles');
+const resetRouter         = require('./routes/reset');
 const { seed }            = require('./db/seed');
 
 const app = express();
@@ -35,6 +37,8 @@ app.use('/api/transactions',  transactionsRouter);
 app.use('/api/budgets',       budgetsRouter);
 app.use('/api/dashboard',     dashboardRouter);
 app.use('/api/insights',      insightsRouter);
+app.use('/api/profiles',      profilesRouter);
+app.use('/api/reset',         resetRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

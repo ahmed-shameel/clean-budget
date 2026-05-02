@@ -13,6 +13,7 @@ export function AppProvider({ children }) {
   const [categories, setCategories] = useState([]);
   const [dashboardData, setDashboardData] = useState(null);
   const [insights, setInsights] = useState(null);
+  const [profiles, setProfiles] = useState([]);
 
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [loadingBudgets, setLoadingBudgets] = useState(false);
@@ -80,13 +81,23 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  const loadProfiles = useCallback(async () => {
+    try {
+      const data = await api.getProfiles();
+      setProfiles(data);
+    } catch (e) {
+      console.error('Failed to load profiles', e);
+    }
+  }, []);
+
   const refreshAll = useCallback(() => {
     loadCategories();
     loadTransactions(selectedMonth);
     loadBudgets(selectedMonth);
     loadDashboard();
     loadInsights();
-  }, [loadCategories, loadTransactions, loadBudgets, loadDashboard, loadInsights, selectedMonth]);
+    loadProfiles();
+  }, [loadCategories, loadTransactions, loadBudgets, loadDashboard, loadInsights, loadProfiles, selectedMonth]);
 
   useEffect(() => {
     refreshAll();
@@ -136,6 +147,40 @@ export function AppProvider({ children }) {
     await loadInsights();
   };
 
+  // --- Profiles ---
+  const saveProfile = async (data, id = null) => {
+    if (id) await api.updateProfile(id, data);
+    else await api.createProfile(data);
+    await loadProfiles();
+  };
+
+  const removeProfile = async (id) => {
+    await api.deleteProfile(id);
+    await loadProfiles();
+  };
+
+  const applyProfile = async (id) => {
+    await api.applyProfile(id, selectedMonth);
+    await loadBudgets(selectedMonth);
+    await loadDashboard();
+    await loadInsights();
+  };
+
+  const saveCurrentAsProfile = async (name) => {
+    const profileBudgets = budgets.map((b) => ({
+      category_id: b.category_id,
+      monthly_limit: b.monthly_limit,
+    }));
+    await api.createProfile({ name, budgets: profileBudgets });
+    await loadProfiles();
+  };
+
+  // --- Reset ---
+  const resetPlan = async () => {
+    await api.resetAll();
+    await refreshAll();
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -144,6 +189,7 @@ export function AppProvider({ children }) {
         categories,
         dashboardData,
         insights,
+        profiles,
         loadingTransactions,
         loadingBudgets,
         loadingDashboard,
@@ -155,6 +201,11 @@ export function AppProvider({ children }) {
         removeTransaction,
         saveBudget,
         removeBudget,
+        saveProfile,
+        removeProfile,
+        applyProfile,
+        saveCurrentAsProfile,
+        resetPlan,
         refreshAll,
       }}
     >

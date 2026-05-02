@@ -44,3 +44,23 @@ export const deleteBudget = (id) =>
 export const getDashboardSummary = () => request('/dashboard/summary');
 
 export const getInsights = () => request('/insights');
+
+// --- Profiles ---
+export const getProfiles = () => request('/profiles');
+
+export const createProfile = (data) =>
+  request('/profiles', { method: 'POST', body: JSON.stringify(data) });
+
+export const updateProfile = (id, data) =>
+  request(`/profiles/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+
+export const deleteProfile = (id) =>
+  request(`/profiles/${id}`, { method: 'DELETE' });
+
+export const getProfileBudgets = (id) => request(`/profiles/${id}/budgets`);
+
+export const applyProfile = (id, month) =>
+  request(`/profiles/${id}/apply`, { method: 'POST', body: JSON.stringify({ month }) });
+
+// --- Reset ---
+export const resetAll = () => request('/reset', { method: 'POST' });

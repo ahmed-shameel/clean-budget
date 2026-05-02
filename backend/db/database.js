@@ -35,6 +35,22 @@ db.exec(`
     month TEXT NOT NULL,
     FOREIGN KEY (category_id) REFERENCES categories(id)
   );
+
+  CREATE TABLE IF NOT EXISTS budget_profiles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS profile_budgets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    profile_id INTEGER NOT NULL,
+    category_id INTEGER NOT NULL,
+    monthly_limit REAL NOT NULL,
+    FOREIGN KEY (profile_id) REFERENCES budget_profiles(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(id),
+    UNIQUE(profile_id, category_id)
+  );
 `);
 
 const DEFAULT_CATEGORIES = [
