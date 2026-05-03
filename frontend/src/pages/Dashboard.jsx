@@ -3,6 +3,9 @@ import { parseISO, format } from 'date-fns';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/index.jsx';
 import TimelineBar from '../components/TimelineBar';
+import PageHeader from '../components/PageHeader';
+import SurfaceCard from '../components/SurfaceCard';
+import { CYCLE_START_DAY } from '../constants/app';
 
 export default function Dashboard() {
   const { cycleOverview, loadingCycleOverview } = useApp();
@@ -10,9 +13,16 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const days = useMemo(() => cycleOverview?.days || [], [cycleOverview?.days]);
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const activeDate = selectedDate && days.some((d) => d.date === selectedDate)
+    ? selectedDate
+    : days.some((d) => d.date === today)
+    ? today
+    : days[0]?.date || null;
+
   const selectedDay = useMemo(
-    () => days.find((d) => d.date === selectedDate) || days[0] || null,
-    [days, selectedDate]
+    () => days.find((d) => d.date === activeDate) || days[0] || null,
+    [days, activeDate]
   );
 
   if (loadingCycleOverview) {
@@ -25,7 +35,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">{t('overview_title')}</h1>
+      <PageHeader title={t('overview_title')} />
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4">
@@ -50,7 +60,7 @@ export default function Dashboard() {
 
       <TimelineBar days={days} />
 
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <SurfaceCard>
         <h2 className="text-base font-semibold text-gray-900 mb-4">{t('overview_cycle_calendar')}</h2>
         <div className="grid grid-cols-7 gap-2">
           {days.map((d) => (
@@ -64,7 +74,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between text-xs font-semibold text-gray-700">
                 <span>{d.day}</span>
                 {d.is_cycle_start && (
-                  <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px]">27</span>
+                  <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px]">{CYCLE_START_DAY}</span>
                 )}
               </div>
               <p className="text-[11px] text-red-600 mt-1">-{formatMoney(d.spent || d.expenses || 0)}</p>
@@ -72,10 +82,10 @@ export default function Dashboard() {
             </button>
           ))}
         </div>
-      </div>
+      </SurfaceCard>
 
       {selectedDay && (
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <SurfaceCard>
           <h2 className="text-base font-semibold text-gray-900 mb-3">
             {format(parseISO(selectedDay.date), 'MMM d, yyyy')}
           </h2>
@@ -97,11 +107,11 @@ export default function Dashboard() {
               <li className="text-sm text-gray-400">{t('transactions_empty')}</li>
             )}
           </ul>
-        </div>
+        </SurfaceCard>
       )}
 
       {cycleOverview?.insights && (
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <SurfaceCard>
           <h2 className="text-base font-semibold text-gray-900 mb-4">{t('insights_title')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
             <div className="rounded-lg bg-gray-50 p-3">
@@ -117,7 +127,7 @@ export default function Dashboard() {
               <p className="font-semibold">{cycleOverview.insights.overspending_days}</p>
             </div>
           </div>
-        </div>
+        </SurfaceCard>
       )}
     </div>
   );

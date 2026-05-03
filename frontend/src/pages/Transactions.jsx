@@ -4,6 +4,8 @@ import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/index.jsx';
 import TransactionModal from '../components/TransactionModal';
+import PageHeader from '../components/PageHeader';
+import SurfaceCard from '../components/SurfaceCard';
 
 export default function Transactions() {
   const {
@@ -77,17 +79,18 @@ export default function Transactions() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">{t('transactions_title')}</h1>
-        <button
-          onClick={openAddExpense}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
-        >
-          <Plus size={16} />
-          {t('transactions_add_expense')}
-        </button>
-      </div>
+      <PageHeader
+        title={t('transactions_title')}
+        actions={(
+          <button
+            onClick={openAddExpense}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
+          >
+            <Plus size={16} />
+            {t('transactions_add_expense')}
+          </button>
+        )}
+      />
 
       {/* Month selector */}
       <div className="flex items-center gap-3">
@@ -109,7 +112,7 @@ export default function Transactions() {
       </div>
 
       {/* List */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <SurfaceCard className="overflow-hidden" padding="">
         {loadingTransactions ? (
           <div className="flex items-center justify-center h-48">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
@@ -192,7 +195,7 @@ export default function Transactions() {
             ))}
           </ul>
         )}
-      </div>
+      </SurfaceCard>
 
       {modalOpen && (
         <TransactionModal

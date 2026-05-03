@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/index.jsx';
+import SurfaceCard from '../components/SurfaceCard';
+import PageHeader from '../components/PageHeader';
+import { LANGUAGE_OPTIONS, CURRENCY_OPTIONS } from '../constants/app';
 
 export default function Profile() {
   const {
@@ -41,21 +44,21 @@ export default function Profile() {
   };
 
   if (loadingProfileBaseline) {
-    return <div className="bg-white rounded-xl shadow-sm p-6 text-sm text-gray-500">Loading profile…</div>;
+    return <SurfaceCard className="text-sm text-gray-500">{t('profile_loading')}</SurfaceCard>;
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">{t('profile_section_title')}</h1>
+      <PageHeader title={t('profile_section_title')} />
 
-      <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+      <SurfaceCard className="space-y-4">
         <h2 className="text-base font-semibold text-gray-900">{t('profile_preferences_title')}</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">{t('profile_language')}</label>
             <div className="flex items-center gap-2">
-              {['en', 'sv'].map((l) => (
+              {LANGUAGE_OPTIONS.map((l) => (
                 <button
                   key={l}
                   onClick={() => setLang(l)}
@@ -74,7 +77,7 @@ export default function Profile() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">{t('profile_currency')}</label>
             <div className="flex items-center gap-2">
-              {['EUR', 'SEK'].map((c) => (
+              {CURRENCY_OPTIONS.map((c) => (
                 <button
                   key={c}
                   onClick={() => setCurrency(c)}
@@ -90,9 +93,9 @@ export default function Profile() {
             </div>
           </div>
         </div>
-      </div>
+      </SurfaceCard>
 
-      <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+      <SurfaceCard className="space-y-4">
         <h2 className="text-base font-semibold text-gray-900">{t('profile_baseline_title')}</h2>
 
         <div>
@@ -120,9 +123,9 @@ export default function Profile() {
           <p>{t('profile_fixed_total')}: <span className="font-semibold">{formatMoney(profileBaseline?.fixed_costs_total || 0)}</span></p>
           <p>{t('profile_baseline_balance')}: <span className="font-semibold">{formatMoney(profileBaseline?.baseline_balance || 0)}</span></p>
         </div>
-      </div>
+      </SurfaceCard>
 
-      <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+      <SurfaceCard className="space-y-4">
         <h2 className="text-base font-semibold text-gray-900">{t('profile_fixed_costs_title')}</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -169,7 +172,7 @@ export default function Profile() {
             <li className="py-6 text-sm text-gray-400 text-center">{t('profile_fixed_empty')}</li>
           )}
         </ul>
-      </div>
+      </SurfaceCard>
     </div>
   );
 }

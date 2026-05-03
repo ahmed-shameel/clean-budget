@@ -6,6 +6,8 @@ import { useT } from '../i18n/index.jsx';
 import BudgetModal from '../components/BudgetModal';
 import ProfileModal from '../components/ProfileModal';
 import ProgressBar from '../components/ProgressBar';
+import PageHeader from '../components/PageHeader';
+import SurfaceCard from '../components/SurfaceCard';
 
 // ── Save-as-profile inline prompt ─────────────────────────────────────────
 function SaveAsProfileBar({ onSave, onCancel }) {
@@ -145,25 +147,22 @@ export default function Budgets() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('budgets_title')}</h1>
-          {displayMonth && (
-            <p className="text-sm text-gray-500 mt-1">{displayMonth}</p>
-          )}
-        </div>
-        <button
-          onClick={openAddBudget}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
-        >
-          <Plus size={16} />
-          {t('budgets_add')}
-        </button>
-      </div>
+      <PageHeader
+        title={t('budgets_title')}
+        subtitle={displayMonth}
+        actions={(
+          <button
+            onClick={openAddBudget}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
+          >
+            <Plus size={16} />
+            {t('budgets_add')}
+          </button>
+        )}
+      />
 
       {/* Budget Profiles */}
-      <div className="bg-white rounded-xl shadow-sm p-5">
+      <SurfaceCard padding="p-5">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <BookMarked size={16} className="text-primary-600" />
@@ -214,7 +213,7 @@ export default function Budgets() {
             ))}
           </div>
         )}
-      </div>
+      </SurfaceCard>
 
       {/* Active budgets for selected month */}
       {loadingBudgets ? (
@@ -222,7 +221,7 @@ export default function Budgets() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
         </div>
       ) : budgets.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm text-center py-16">
+        <SurfaceCard className="text-center py-16" padding="">
           <p className="text-gray-400 text-sm">{t('budgets_empty', { month: displayMonth })}</p>
           <button
             onClick={openAddBudget}
@@ -230,7 +229,7 @@ export default function Budgets() {
           >
             {t('budgets_add_first')}
           </button>
-        </div>
+        </SurfaceCard>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {budgets.map((b) => {
@@ -246,7 +245,7 @@ export default function Budgets() {
                 : 'text-green-600 bg-green-50';
 
             return (
-              <div key={b.id} className="bg-white rounded-xl shadow-sm p-6">
+              <SurfaceCard key={b.id}>
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900">
@@ -286,7 +285,7 @@ export default function Budgets() {
                       : t('budgets_left', { amount: formatMoney(remaining) })}
                   </span>
                 </div>
-              </div>
+              </SurfaceCard>
             );
           })}
         </div>

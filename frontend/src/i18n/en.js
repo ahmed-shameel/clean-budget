@@ -45,6 +45,11 @@ const en = {
   overview_first_negative: 'First Negative Day',
   overview_fixed_ratio: 'Fixed Cost Ratio',
   overview_overspending_days: 'Overspending Days',
+  timeline_title: 'Timeline',
+  timeline_legend: 'Green = income, red = expenses. Darker = higher amount.',
+  timeline_tooltip_income: 'income',
+  timeline_tooltip_expenses: 'expenses',
+  timeline_tooltip_balance: 'balance',
 
   // ── Transactions ─────────────────────────────────────────
   transactions_title: 'Transactions',
@@ -126,6 +131,7 @@ const en = {
   profile_fixed_name_placeholder: 'Name (e.g. Rent)',
   profile_fixed_amount_placeholder: 'Amount',
   profile_fixed_empty: 'No fixed costs yet.',
+  profile_loading: 'Loading profile…',
 
   // ── Reset modal ──────────────────────────────────────────
   reset_title: 'Start New Plan',

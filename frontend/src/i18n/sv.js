@@ -45,6 +45,11 @@ const sv = {
   overview_first_negative: 'Första minusdag',
   overview_fixed_ratio: 'Andel fasta kostnader',
   overview_overspending_days: 'Överspenderingsdagar',
+  timeline_title: 'Tidslinje',
+  timeline_legend: 'Grön = inkomst, röd = utgifter. Mörkare = högre belopp.',
+  timeline_tooltip_income: 'inkomst',
+  timeline_tooltip_expenses: 'utgifter',
+  timeline_tooltip_balance: 'saldo',
 
   // ── Transactions ─────────────────────────────────────────
   transactions_title: 'Transaktioner',
@@ -126,6 +131,7 @@ const sv = {
   profile_fixed_name_placeholder: 'Namn (t.ex. Hyra)',
   profile_fixed_amount_placeholder: 'Belopp',
   profile_fixed_empty: 'Inga fasta kostnader än.',
+  profile_loading: 'Laddar profil…',
 
   // ── Reset modal ──────────────────────────────────────────
   reset_title: 'Starta ny plan',

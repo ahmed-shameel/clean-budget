@@ -6,8 +6,18 @@ import * as api from '../api/client';
 
 const AppContext = createContext(null);
 
+function currentCycleKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-based
+  const cycleStart = now.getDate() >= 27
+    ? new Date(year, month, 1)
+    : new Date(year, month - 1, 1);
+  return format(cycleStart, 'yyyy-MM');
+}
+
 export function AppProvider({ children }) {
-  const currentMonth = format(new Date(), 'yyyy-MM');
+  const currentMonth = currentCycleKey();
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
 
   const [transactions, setTransactions] = useState([]);

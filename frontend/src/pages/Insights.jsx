@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/index.jsx';
+import PageHeader from '../components/PageHeader';
+import SurfaceCard from '../components/SurfaceCard';
 
 const CARD_STYLES = {
   warning: {
@@ -75,14 +77,14 @@ export default function Insights() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">{t('insights_title')}</h1>
+      <PageHeader title={t('insights_title')} />
 
       {/* Insight cards */}
       {cards.length === 0 && !optimization ? (
-        <div className="bg-white rounded-xl shadow-sm text-center py-16">
+        <SurfaceCard className="text-center py-16" padding="">
           <Sparkles className="mx-auto text-gray-300 mb-3" size={32} />
           <p className="text-gray-400 text-sm">{t('insights_empty')}</p>
-        </div>
+        </SurfaceCard>
       ) : (
         <>
           {cards.length > 0 && (
@@ -100,7 +102,7 @@ export default function Insights() {
 
           {/* Savings Optimization */}
           {optimization && (
-            <div className="bg-white rounded-xl shadow-sm p-6">
+            <SurfaceCard>
               <div className="flex items-center gap-2 mb-4">
                 <TrendingDown size={20} className="text-primary-600" />
                 <h2 className="text-base font-semibold text-gray-900">
@@ -156,7 +158,7 @@ export default function Insights() {
                   </div>
                 </>
               )}
-            </div>
+            </SurfaceCard>
           )}
         </>
       )}

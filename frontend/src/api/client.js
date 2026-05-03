@@ -45,7 +45,6 @@ export const getDashboardSummary = () => request('/dashboard/summary');
 
 export const getInsights = () => request('/insights');
 
-// --- Life optimizer core ---
 export const getCycleOverview = (cycle) => {
   const query = cycle ? `?cycle=${cycle}` : '';
   return request(`/cycle-overview${query}`);
